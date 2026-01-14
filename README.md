@@ -2,7 +2,7 @@
 A lightweight self-check for PMO, Portfolio, and Delivery leaders to determine whether their PMO is operating as a reporting factory or a real-time decision engine.
 
 # Live Assessment
-👉 https://mrajkumar18.github.io/pmo-Decision-Selfcheck/
+👉 https://mrajkumar18.github.io/PMO-Decision-Selfcheck/
 
 # What this checks
 This self-check focuses on five must-know decision signals:
