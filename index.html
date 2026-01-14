@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PMO Decision Signal Self-Check</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0f172a 100%);
+            min-height: 100vh;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .glass {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="glass border-b border-slate-700/50">
+        <div class="max-w-4xl mx-auto px-6 py-6">
+            <div class="flex items-center gap-3">
+                <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                <div>
+                    <h1 class="text-2xl font-bold text-white">PMO Decision Signal Self-Check by AIPMO360</h1>
+                    <p class="text-slate-400 text-sm">Is your PMO a reporting factory or a decision engine?</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div id="app" class="max-w-4xl mx-auto px-6 py-12"></div>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-700/50 mt-12">
+        <div class="max-w-4xl mx-auto px-6 py-6">
+            <p class="text-center text-slate-500 text-sm">
+                A 5-minute reflection tool for PMO leaders
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        const questions = [
+            {
+                id: 'q1',
+                text: 'Do leaders receive insights before decisions are required?',
+                subtitle: 'Or only after reviews are already scheduled?',
+                options: [
+                    { value: 'yes', label: 'Yes, before decisions are required', signal: 'Decision-enabled' },
+                    { value: 'no', label: 'No, only after reviews are scheduled', signal: 'Reporting-driven' }
+                ]
+            },
+            {
+                id: 'q2',
+                text: 'Are portfolio risks flagged automatically, or discovered manually?',
+                subtitle: 'Is AI surfacing risk signals, or are teams still chasing updates?',
+                options: [
+                    { value: 'automatic', label: 'Automatically flagged', signal: 'Proactive PMO' },
+                    { value: 'manual', label: 'Discovered manually', signal: 'Reactive PMO' }
+                ]
+            },
+            {
+                id: 'q3',
+                text: 'Can executives see real-time trade-offs across priorities?',
+                subtitle: 'What happens when funding, scope, or strategy shifts?',
+                options: [
+                    { value: 'visible', label: 'Yes, trade-offs are visible in real-time', signal: 'Strategic PMO' },
+                    { value: 'static', label: 'No, views are static', signal: 'Status PMO' }
+                ]
+            },
+            {
+                id: 'q4',
+                text: 'Does AI surface recommendations, or just dashboards?',
+                subtitle: 'Are leaders guided toward actions, or left to interpret charts?',
+                options: [
+                    { value: 'recommendations', label: 'AI surfaces recommendations', signal: 'Decision support' },
+                    { value: 'dashboards', label: 'Just dashboards and charts', signal: 'Information delivery' }
+                ]
+            },
+            {
+                id: 'q5',
+                text: 'Is there a clear owner for acting on AI-generated insights?',
+                subtitle: 'When AI flags an issue, who is accountable?',
+                options: [
+                    { value: 'clear', label: 'Yes, clear ownership', signal: 'Governed AI' },
+                    { value: 'ambiguous', label: 'No, ambiguous ownership', signal: 'Hidden risk' }
+                ]
+            }
+        ];
+
+        let currentQuestion = 0;
+        let answers = {};
+
+        const outcomes = {
+            'reporting-centric': {
+                title: 'Reporting-Centric',
+                subtitle: 'Foundation Stage',
+                color: 'bg-orange-500',
+                icon: '📊',
+                description: 'Your PMO is currently focused on collecting and presenting data. The signals indicate opportunities to evolve toward proactive decision support with clearer ownership and real-time insights.',
+                keyPoints: [
+                    'Shift from retrospective reporting to predictive insights',
+                    'Automate risk flagging and data collection processes',
+                    'Establish clear decision owners for AI-generated insights',
+                    'Implement real-time dashboards with trade-off visibility',
+                    'Move from chart delivery to actionable recommendations'
+                ]
+            },
+            'transitioning': {
+                title: 'Transitioning',
+                subtitle: 'Evolution in Progress',
+                color: 'bg-blue-500',
+                icon: '🔄',
+                description: 'Your PMO is moving in the right direction, blending reporting with decision support. Some signals show strength while others indicate areas for improvement.',
+                keyPoints: [
+                    'Strengthen automation in risk detection and monitoring',
+                    'Enhance AI capabilities to provide more recommendations',
+                    'Improve timing of insight delivery to decision points',
+                    'Increase real-time visibility of strategic trade-offs',
+                    'Clarify accountability frameworks for insight-driven actions'
+                ]
+            },
+            'decision-enabled': {
+                title: 'Decision-Enabled',
+                subtitle: 'Strategic Engine',
+                color: 'bg-green-500',
+                icon: '🚀',
+                description: 'Your PMO is operating as a strategic decision engine. The signals show timely insights, proactive risk management, clear ownership, and actionable recommendations driving executive decisions.',
+                keyPoints: [
+                    'Continue refining AI recommendation quality and accuracy',
+                    'Document and share decision-enabling best practices',
+                    'Measure and communicate decision velocity improvements',
+                    'Explore advanced predictive analytics opportunities',
+                    'Strengthen feedback loops between insights and outcomes'
+                ]
+            }
+        };
+
+        function calculateOutcome() {
+            const positiveAnswers = Object.values(answers).filter(a => 
+                ['yes', 'automatic', 'visible', 'recommendations', 'clear'].includes(a.value)
+            ).length;
+            
+            if (positiveAnswers >= 4) return 'decision-enabled';
+            if (positiveAnswers >= 2) return 'transitioning';
+            return 'reporting-centric';
+        }
+
+        function handleAnswer(value, signal) {
+            answers[questions[currentQuestion].id] = { value, signal };
+            
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                setTimeout(renderQuestion, 300);
+            } else {
+                setTimeout(renderResults, 300);
+            }
+        }
+
+        function renderQuestion() {
+            const question = questions[currentQuestion];
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            
+            document.getElementById('app').innerHTML = `
+                <div class="fade-in">
+                    <!-- Progress Bar -->
+                    <div class="mb-8">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-slate-400">Question ${currentQuestion + 1} of ${questions.length}</span>
+                            <span class="text-sm text-slate-400">${Math.round(progress)}%</span>
+                        </div>
+                        <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all duration-500 ease-out" style="width: ${progress}%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Question Card -->
+                    <div class="glass rounded-2xl p-8 border border-slate-700/50 shadow-2xl">
+                        <h2 class="text-2xl font-bold text-white mb-3">
+                            ${question.text}
+                        </h2>
+                        <p class="text-slate-400 text-lg mb-8 italic">
+                            ${question.subtitle}
+                        </p>
+
+                        <div class="space-y-4">
+                            ${question.options.map((option, idx) => `
+                                <button onclick="handleAnswer('${option.value}', '${option.signal}')" 
+                                    class="w-full text-left p-6 rounded-xl bg-slate-700/30 border-2 border-slate-600/50 hover:border-blue-500 hover:bg-slate-700/50 transition-all duration-200 group">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <span class="text-lg text-white group-hover:text-blue-400 transition-colors block mb-2">
+                                                ${option.label}
+                                            </span>
+                                            <span class="text-sm text-slate-500 group-hover:text-slate-400 transition-colors">
+                                                Signal: ${option.signal}
+                                            </span>
+                                        </div>
+                                        <svg class="w-5 h-5 text-slate-500 group-hover:text-blue-400 group-hover:translate-x-1 transition-all mt-1 ml-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </div>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Navigation Hint -->
+                    <div class="mt-6 text-center">
+                        <p class="text-slate-500 text-sm">Select an option to continue</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderResults() {
+            const outcome = calculateOutcome();
+            const outcomeData = outcomes[outcome];
+            
+            document.getElementById('app').innerHTML = `
+                <div class="fade-in">
+                    <!-- Results Header -->
+                    <div class="${outcomeData.color} rounded-2xl p-8 mb-6 shadow-2xl">
+                        <div class="text-center">
+                            <div class="text-6xl mb-4">${outcomeData.icon}</div>
+                            <h2 class="text-4xl font-bold text-white mb-2">${outcomeData.title}</h2>
+                            <p class="text-xl text-white/90">${outcomeData.subtitle}</p>
+                        </div>
+                    </div>
+
+                    <!-- Your Signals -->
+                    <div class="glass rounded-2xl p-8 border border-slate-700/50 mb-6">
+                        <h3 class="text-xl font-bold text-white mb-6">Your Decision Signals</h3>
+                        <div class="space-y-4">
+                            ${Object.entries(answers).map(([questionId, answer], idx) => {
+                                const question = questions.find(q => q.id === questionId);
+                                return `
+                                    <div class="flex items-start gap-4 pb-4 border-b border-slate-700/50 ${idx === Object.keys(answers).length - 1 ? '' : ''}">
+                                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold border border-blue-500/30 mt-1">
+                                            ${idx + 1}
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="text-slate-300 mb-1">${question.text}</p>
+                                            <p class="text-blue-400 font-semibold">→ ${answer.signal}</p>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="glass rounded-2xl p-8 border border-slate-700/50 mb-6">
+                        <h3 class="text-xl font-bold text-white mb-4">What This Means</h3>
+                        <p class="text-slate-300 leading-relaxed text-lg">
+                            ${outcomeData.description}
+                        </p>
+                    </div>
+
+                    <!-- Next Steps -->
+                    <div class="glass rounded-2xl p-8 border border-slate-700/50 mb-6">
+                        <h3 class="text-xl font-bold text-white mb-6">Next Steps</h3>
+                        <div class="space-y-4">
+                            ${outcomeData.keyPoints.map((point, idx) => `
+                                <div class="flex gap-4">
+                                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold border border-blue-500/30">
+                                        ${idx + 1}
+                                    </div>
+                                    <p class="text-slate-300 pt-1">${point}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Reset Button -->
+                    <div class="flex justify-center">
+                        <button onclick="resetAssessment()" 
+                            class="flex items-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            Take Assessment Again
+                        </button>
+                    </div>
+
+                    <!-- Disclaimer -->
+                    <div class="mt-8 text-center">
+                        <p class="text-slate-500 text-sm">
+                            This is a reflection tool, not a formal assessment. Use it to guide conversations about PMO evolution.
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function resetAssessment() {
+            currentQuestion = 0;
+            answers = {};
+            renderQuestion();
+        }
+
+        // Make functions available globally
+        window.handleAnswer = handleAnswer;
+        window.resetAssessment = resetAssessment;
+
+        // Initialize
+        renderQuestion();
+    </script>
+</body>
+</html>
